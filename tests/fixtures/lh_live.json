@@ -1,0 +1,80 @@
+[
+ {
+  "dsSch": [
+   {
+    "PAN_ED_DT": "20261014",
+    "PG_SZ": "100",
+    "PAN_ST_DT": "20260814",
+    "PAGE": "1",
+    "UPP_AIS_TP_CD": "06"
+   }
+  ]
+ },
+ {
+  "dsList": [
+   {
+    "PAN_NT_ST_DT": "2026.10.13",
+    "PAN_ID": "2015122300020904",
+    "AIS_TP_CD_NM": "행복주택",
+    "CNP_CD_NM": "경상남도",
+    "ALL_CNT": "196",
+    "SPL_INF_TP_CD": "063",
+    "AIS_TP_CD": "10",
+    "PAN_DT": "20261007",
+    "RNUM": "3",
+    "CCR_CNNT_SYS_DS_CD": "03",
+    "DTL_URL": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020904&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=10&mi=1026",
+    "CLSG_DT": "2026.10.21",
+    "UPP_AIS_TP_CD": "06",
+    "PAN_NM": "[정정공고](정정) 창녕영산 1BL 행복주택 예비입주자 모집 공고 ('26.10.07. 공고)",
+    "UPP_AIS_TP_NM": "임대주택",
+    "PAN_SS": "공고중",
+    "DTL_URL_MOB": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020904&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=10&mi=1026"
+   },
+   {
+    "PAN_NT_ST_DT": "2026.10.14",
+    "PAN_ID": "2015122300020908",
+    "AIS_TP_CD_NM": "국민임대",
+    "CNP_CD_NM": "전북특별자치도",
+    "ALL_CNT": "196",
+    "SPL_INF_TP_CD": "062",
+    "AIS_TP_CD": "07",
+    "PAN_DT": "20261014",
+    "RNUM": "1",
+    "CCR_CNNT_SYS_DS_CD": "03",
+    "DTL_URL": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020908&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=07&mi=1026",
+    "CLSG_DT": "2026.10.21",
+    "UPP_AIS_TP_CD": "06",
+    "PAN_NM": "김제하동 국민임대주택 모집공고",
+    "UPP_AIS_TP_NM": "임대주택",
+    "PAN_SS": "공고중",
+    "DTL_URL_MOB": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020908&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=07&mi=1026"
+   },
+   {
+    "PAN_NT_ST_DT": "2026.10.14",
+    "PAN_ID": "2015122300020879",
+    "AIS_TP_CD_NM": "공공임대",
+    "CNP_CD_NM": "충청북도",
+    "ALL_CNT": "196",
+    "SPL_INF_TP_CD": "061",
+    "AIS_TP_CD": "08",
+    "PAN_DT": "20261014",
+    "RNUM": "2",
+    "CCR_CNNT_SYS_DS_CD": "03",
+    "DTL_URL": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020879&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=08&mi=1026",
+    "CLSG_DT": "2026.10.29",
+    "UPP_AIS_TP_CD": "06",
+    "PAN_NM": "음성금왕1 50년공공임대주택 예비입주자 모집 공고[2026.10.14]",
+    "UPP_AIS_TP_NM": "임대주택",
+    "PAN_SS": "공고중",
+    "DTL_URL_MOB": "https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancInfo.do?panId=2015122300020879&ccrCnntSysDsCd=03&uppAisTpCd=06&aisTpCd=08&mi=1026"
+   }
+  ],
+  "resHeader": [
+   {
+    "RS_DTTM": "20261014043828",
+    "SS_CODE": "Y"
+   }
+  ]
+ }
+]

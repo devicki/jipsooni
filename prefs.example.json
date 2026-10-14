@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "household": {
+    "type": null,
+    "members": null,
+    "is_homeless": null,
+    "is_householder": null,
+    "has_children": false,
+    "children_count": 0,
+    "has_newborn_or_pregnant": false,
+    "age": null,
+    "marriage_years": null
+  },
+  "finance": {
+    "monthly_income_krw": null,
+    "total_assets_krw": null,
+    "car_value_krw": null
+  },
+  "subscription_account": {
+    "has": null,
+    "years": null,
+    "deposit_count": null,
+    "balance_krw": null
+  },
+  "goals": [
+    "move_in",
+    "relaxed",
+    "ownership"
+  ],
+  "budget": {
+    "purchase_max_krw": null,
+    "deposit_max_krw": null,
+    "monthly_rent_max_krw": null
+  },
+  "regions": {
+    "sido": [
+      "서울",
+      "경기",
+      "인천"
+    ],
+    "sigungu": [],
+    "neighborhoods": []
+  },
+  "housing_types": {
+    "include": [],
+    "exclude": []
+  },
+  "filters": {
+    "exclude_child_required": null,
+    "exclude_small_units": false,
+    "drop_outside_regions": true
+  },
+  "digest": {
+    "per_section_limit": 5,
+    "relaxed_min_score": 60,
+    "ownership_min_score": 40
+  },
+  "sources": [
+    "lh",
+    "myhome",
+    "sh",
+    "hug",
+    "applyhome"
+  ],
+  "network": {
+    "kr_proxy": "",
+    "kr_proxy_upstream": ""
+  }
+}
