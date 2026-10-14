@@ -22,7 +22,9 @@ def should_discard(row, ranked: RankedAlert, prefs, today: date) -> bool:
         return True
     if is_excluded_for_user_profile(row, prefs):
         return True
-    if ranked.category == "relaxed" and prefs["filters"].get("drop_outside_regions", True) and not in_preferred_regions(row, prefs):
+    # port fix: ownership used to skip region rules entirely (인천 공공분양 for a 서울·경기 user)
+    if ranked.category in ("relaxed", "ownership") and prefs["filters"].get("drop_outside_regions", True) \
+            and not in_preferred_regions(row, prefs):
         return True
     if prefs["filters"].get("exclude_small_units") and is_small_unit(row):
         return True

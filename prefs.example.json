@@ -42,7 +42,8 @@
     "sigungu": [],
     "neighborhoods": [],
     "secondary_sigungu": [],
-    "secondary_neighborhoods": []
+    "secondary_neighborhoods": [],
+    "include_adjacent": true
   },
   "housing_types": {
     "include": [],

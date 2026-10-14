@@ -130,6 +130,58 @@ def _matched_area(text: str, prefs, tier: int) -> str | None:
     return None
 
 
+_ADJ: dict[str, list[str]] | None = None
+
+
+def _adjacency() -> dict[str, list[str]]:
+    global _ADJ
+    if _ADJ is None:
+        import json
+        from pathlib import Path
+        path = Path(__file__).parent / "data" / "adjacency_capital.json"
+        _ADJ = json.loads(path.read_text(encoding="utf-8"))["adjacency"]
+    return _ADJ
+
+
+def _stem(name: str) -> str:
+    return re.sub(r"(특별시|광역시|시|군|구)$", "", name)
+
+
+def _area_in_text(key: str, text: str) -> bool:
+    """key like '인천 계양구'. Needs its sido in the text, plus the name or its stem ('인천계양').
+    Longer area names containing the stem are blanked first (양주 vs 남양주, 광주 vs 광주광역시)."""
+    sido, _, name = key.partition(" ")
+    if not _contains_any(text, SIDO_ALIASES.get(sido, (sido,))):
+        return False
+    stem = _stem(name)
+    for other in _adjacency():
+        oname = other.split(" ", 1)[1]
+        if other != key and stem in _stem(oname) and _stem(oname) != stem:
+            text = text.replace(_stem(oname), " ")
+    text = text.replace("광주광역시", " ")
+    return name in text or (len(stem) >= 2 and stem in text)
+
+
+def adjacent_match(text: str, prefs) -> tuple[str, ...]:
+    """User tier-1/2 areas that border an area named in the notice, e.g. ('강서구', '부천', '김포')
+    for '인천계양 …'. Empty if include_adjacent is off or nothing borders."""
+    r = prefs["regions"]
+    if not r.get("include_adjacent", True):
+        return ()
+    adj = _adjacency()
+    own = [t for t in (list(r.get("sigungu") or ()) + list(r.get("secondary_sigungu") or ())) if t]
+    vias: list[str] = []
+    for term in own:
+        keys = [k for k in adj if k.split(" ", 1)[1] == term or _stem(k.split(" ", 1)[1]) == _stem(term)]
+        for k in keys:
+            for nb in adj[k]:
+                if _stem(nb.split(" ", 1)[1]) in {_stem(t) for t in own}:
+                    continue  # already a tier-1/2 area
+                if _area_in_text(nb, text) and term not in vias:
+                    vias.append(term)
+    return tuple(vias)
+
+
 def _has_tiers(prefs) -> bool:
     r = prefs["regions"]
     return any(r.get(k) for k in ("sigungu", "neighborhoods", "secondary_sigungu", "secondary_neighborhoods"))
@@ -187,6 +239,8 @@ def rank_alert(row: dict[str, Any], prefs: dict | None = None, today: date | Non
         score += 70; reasons.append("최우선 지역"); reasons.append(f"{hitname} 포함")
     elif tier == 2:
         score += 40; reasons.append("2순위 지역"); reasons.append(f"{hitname} 포함")
+    elif adjacent_match(text, prefs):
+        score += 20; reasons.append("/".join(adjacent_match(text, prefs)) + " 인접")
     else:
         matched = [s for s in (prefs["regions"].get("sido") or []) if _contains_any(text, SIDO_ALIASES.get(s, (s,)))]
         if matched:
@@ -286,7 +340,8 @@ def in_preferred_regions(row: dict[str, Any], prefs: dict | None = None) -> bool
     prefs = prefs or DEFAULT_PREFS
     r = prefs["regions"]
     terms = _sido_terms(prefs) + tuple(x for k in ("sigungu", "neighborhoods", "secondary_sigungu", "secondary_neighborhoods") for x in (r.get(k) or ()))
-    return not terms or _contains_any(_combined_text(row), terms)
+    text = _combined_text(row)
+    return not terms or _contains_any(text, terms) or bool(adjacent_match(text, prefs))
 
 
 def is_preferred_move_in_row(row: dict[str, Any], prefs: dict | None = None) -> bool:
@@ -296,7 +351,7 @@ def is_preferred_move_in_row(row: dict[str, Any], prefs: dict | None = None) -> 
         return True
     if is_excluded_for_user_profile(row, prefs):
         return False
-    if _tier(text, prefs):
+    if _tier(text, prefs) or adjacent_match(text, prefs):
         return True
     if row.get("source") == "HUG" and "든든전세" in text:
         return True
