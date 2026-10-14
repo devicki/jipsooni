@@ -102,6 +102,34 @@ def _sido_terms(prefs) -> tuple[str, ...]:
     return tuple(out)
 
 
+def _tier(text: str, prefs) -> int:
+    """1 = 최우선 시군구/동, 2 = 2순위 시군구/동, 0 = none. '...구' names are ambiguous across
+    cities (서울/부산 강서구), so they also need a preferred-sido match; 시/동 names don't
+    (e.g. '매입임대 모집(인천,부천)' still hits 부천)."""
+    r = prefs["regions"]
+    sido = _sido_terms(prefs)
+    sido_ok = not sido or _contains_any(text, sido)
+
+    def hit(terms) -> bool:
+        return any(t and t in text and (sido_ok or not t.endswith("구")) for t in terms)
+
+    if hit(r.get("sigungu") or ()) or hit(r.get("neighborhoods") or ()):
+        return 1
+    if hit(r.get("secondary_sigungu") or ()) or hit(r.get("secondary_neighborhoods") or ()):
+        return 2
+    return 0
+
+
+def _has_tiers(prefs) -> bool:
+    r = prefs["regions"]
+    return any(r.get(k) for k in ("sigungu", "neighborhoods", "secondary_sigungu", "secondary_neighborhoods"))
+
+
+def is_newlywed(prefs) -> bool:
+    h = prefs["household"]
+    return h.get("type") == "newlywed" or bool(h.get("prospective_newlywed"))
+
+
 def rank_alert(row: dict[str, Any], prefs: dict | None = None, today: date | None = None) -> RankedAlert:
     prefs = prefs or DEFAULT_PREFS
     today = today or date.today()
@@ -142,9 +170,12 @@ def rank_alert(row: dict[str, Any], prefs: dict | None = None, today: date | Non
     if _contains_any(title, LOW_VALUE_NOTICE_KEYWORDS):
         score -= 180; reasons.append("후속/결과 공지 가능성")
 
-    # regions: 1st tier = sigungu/neighborhood (+70), 2nd = preferred sido (+35 first listed, +15 others)
-    if (sigungu and _contains_any(text, sigungu)) or (hoods and _contains_any(text, hoods)):
-        score += 70; reasons.append("선호 지역")
+    # regions: tier1 sigungu/neighborhood (+70), tier2 secondary (+40), else sido (+35 first listed, +15 others)
+    tier = _tier(text, prefs)
+    if tier == 1:
+        score += 70; reasons.append("최우선 지역")
+    elif tier == 2:
+        score += 40; reasons.append("2순위 지역")
     else:
         matched = [s for s in (prefs["regions"].get("sido") or []) if _contains_any(text, SIDO_ALIASES.get(s, (s,)))]
         if matched:
@@ -170,6 +201,17 @@ def rank_alert(row: dict[str, Any], prefs: dict | None = None, today: date | Non
 
     if _contains_any(text, RELAXED_CONDITION_KEYWORDS):
         score += 120; reasons.append("조건완화/무순위 후보")
+
+    if is_newlywed(prefs) and "신혼" in text:
+        score += 40; reasons.append("신혼 대상")
+
+    dcap = prefs["budget"].get("deposit_max_krw")
+    dep = _parse_deposit_krw(row.get("cost_text"))
+    if dcap and dep is not None and _category(text) == "move_in":
+        if dep <= Decimal(dcap):
+            score += 20; reasons.append(f"보증금 {_eok(dcap)} 이내")
+        else:
+            score -= 80; reasons.append(f"보증금 {_eok(dcap)} 초과")
 
     inc = tuple(prefs["housing_types"].get("include") or ())
     hit = [k for k in inc if k in text]
@@ -218,7 +260,8 @@ def is_small_unit(row: dict[str, Any]) -> bool:
 
 def in_preferred_regions(row: dict[str, Any], prefs: dict | None = None) -> bool:
     prefs = prefs or DEFAULT_PREFS
-    terms = _sido_terms(prefs) + tuple(prefs["regions"].get("sigungu") or ()) + tuple(prefs["regions"].get("neighborhoods") or ())
+    r = prefs["regions"]
+    terms = _sido_terms(prefs) + tuple(x for k in ("sigungu", "neighborhoods", "secondary_sigungu", "secondary_neighborhoods") for x in (r.get(k) or ()))
     return not terms or _contains_any(_combined_text(row), terms)
 
 
@@ -229,9 +272,7 @@ def is_preferred_move_in_row(row: dict[str, Any], prefs: dict | None = None) -> 
         return True
     if is_excluded_for_user_profile(row, prefs):
         return False
-    sigungu = tuple(prefs["regions"].get("sigungu") or ())
-    hoods = tuple(prefs["regions"].get("neighborhoods") or ())
-    if (sigungu and _contains_any(text, sigungu)) or (hoods and _contains_any(text, hoods)):
+    if _tier(text, prefs):
         return True
     if row.get("source") == "HUG" and "든든전세" in text:
         return True
@@ -239,7 +280,7 @@ def is_preferred_move_in_row(row: dict[str, Any], prefs: dict | None = None) -> 
     if in_preferred_regions(row, prefs) and _contains_any(text, inc):
         return True
     # original only kept tier-1 districts; with no sigungu set, fall back to sido match
-    return not sigungu and not hoods and in_preferred_regions(row, prefs)
+    return not _has_tiers(prefs) and in_preferred_regions(row, prefs)
 
 
 def _group_key(row: dict[str, Any]) -> str:
@@ -279,3 +320,14 @@ def _parse_price_krw(value: Any) -> Decimal | None:
     if m:
         return Decimal(m.group(1)) * Decimal("10000")
     return None
+
+
+def _parse_deposit_krw(value: Any) -> Decimal | None:
+    """'임대보증금 116,120,000원' / '보증금 1.5억' -> KRW."""
+    if not value:
+        return None
+    m = re.search(r"보증금\s*([\d,\.]+)\s*(억|만원|원)", str(value))
+    if not m:
+        return None
+    n = Decimal(m.group(1).replace(",", ""))
+    return n * {"억": Decimal(100000000), "만원": Decimal(10000), "원": Decimal(1)}[m.group(2)]

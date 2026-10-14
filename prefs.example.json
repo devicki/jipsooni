@@ -1,7 +1,6 @@
 {
   "version": 1,
   "household": {
-    "type": null,
     "members": null,
     "is_homeless": null,
     "is_householder": null,
@@ -9,7 +8,9 @@
     "children_count": 0,
     "has_newborn_or_pregnant": false,
     "age": null,
-    "marriage_years": null
+    "marriage_years": null,
+    "type": null,
+    "prospective_newlywed": false
   },
   "finance": {
     "monthly_income_krw": null,
@@ -39,7 +40,9 @@
       "인천"
     ],
     "sigungu": [],
-    "neighborhoods": []
+    "neighborhoods": [],
+    "secondary_sigungu": [],
+    "secondary_neighborhoods": []
   },
   "housing_types": {
     "include": [],

@@ -10,6 +10,7 @@ DEFAULT_PREFS: dict[str, Any] = {
     "version": 1,
     "household": {
         "type": None,            # single | newlywed | couple | family | senior
+        "prospective_newlywed": False,  # 예비신혼부부 (type=newlywed와 함께) -> 신혼 공고 가산점
         "members": None,
         "is_homeless": None,     # 무주택 세대구성원 여부
         "is_householder": None,  # 세대주 여부
@@ -35,6 +36,8 @@ DEFAULT_PREFS: dict[str, Any] = {
         "sido": ["서울", "경기", "인천"],   # 광역 단위 (청약홈 API 필터에도 사용)
         "sigungu": [],                      # 최우선 시군구, 예: ["강서구", "양천구"]
         "neighborhoods": [],                # 동/생활권 키워드, 예: ["마곡", "목동"]
+        "secondary_sigungu": [],            # 2순위 시군구 (+40, 1순위는 +70), 예: ["금천구", "부천"]
+        "secondary_neighborhoods": [],      # 2순위 동/생활권, 예: ["개봉", "풍무"]
     },
     "housing_types": {
         "include": [],   # 가산점 키워드 예: ["행복주택", "든든전세", "공공분양"]

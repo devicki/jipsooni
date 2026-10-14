@@ -27,7 +27,7 @@ def test_example_profile_with_districts_and_budget():
     example = p(regions={"sido": ["서울", "경기", "인천"], "sigungu": ["강서구", "양천구", "구로구", "동작구", "관악구"]},
              budget={"purchase_max_krw": 800_000_000})
     r = rank_alert(row(1, "마곡 공공분양", cost="최고 7.5억"), example, T)
-    assert "선호 지역" in r.reasons and "예산 8억 이내" in r.reasons and r.category == "ownership"
+    assert "최우선 지역" in r.reasons and "예산 8억 이내" in r.reasons and r.category == "ownership"
     r2 = rank_alert(row(2, "공공분양", region="경기도 성남시", cost="9억"), example, T)
     assert "예산 8억 초과" in r2.reasons
 

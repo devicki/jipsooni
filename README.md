@@ -68,12 +68,12 @@ export DATA_GO_KR_SERVICE_KEY='발급받은_키'
 
 | 키 | 설명 |
 |---|---|
-| `household` | type(single/newlywed/couple/family/senior), members, is_homeless(무주택), is_householder(세대주), has_children, children_count, has_newborn_or_pregnant, age, marriage_years |
+| `household` | type(single/newlywed/couple/family/senior), members, is_homeless(무주택), is_householder(세대주), has_children, children_count, has_newborn_or_pregnant, age, marriage_years, prospective_newlywed(예비신혼). newlywed면 신혼 공고 +40 |
 | `finance` | monthly_income_krw, total_assets_krw, car_value_krw (자격 확인 참고용) |
 | `subscription_account` | 청약통장 has, years, deposit_count, balance_krw |
 | `goals` | `move_in`, `relaxed`, `ownership` 중 받을 섹션 |
-| `budget` | purchase_max_krw(매매·분양 상한), deposit_max_krw, monthly_rent_max_krw |
-| `regions` | sido(광역, 청약홈 API 필터에도 사용), sigungu(최우선 시군구), neighborhoods(동·생활권 키워드) |
+| `budget` | purchase_max_krw(매매·분양 상한), deposit_max_krw(임대보증금 상한, 이내 +20 / 초과 -80), monthly_rent_max_krw |
+| `regions` | sido(광역, 청약홈 API 필터에도 사용), sigungu(최우선 시군구), neighborhoods(동·생활권 키워드) = 1순위 +70, secondary_sigungu / secondary_neighborhoods = 2순위 +40. '…구' 이름은 sido도 맞아야 인정 |
 | `housing_types` | include(가산점 키워드), exclude(제외 키워드) |
 | `filters` | exclude_child_required(비우면 자녀 유무로 자동), exclude_small_units(원룸·기숙사 제외), drop_outside_regions |
 | `digest` | per_section_limit, relaxed_min_score, ownership_min_score |
