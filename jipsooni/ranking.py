@@ -12,9 +12,9 @@ from jipsooni.prefs import DEFAULT_PREFS, TARGET_GROUP_KEYWORDS, exclude_child_r
 
 SIDO_ALIASES = {
     "서울": ("서울",), "경기": ("경기",), "인천": ("인천",), "부산": ("부산",), "대구": ("대구",),
-    "광주": ("광주광역",  "광주시 "), "대전": ("대전",), "울산": ("울산",), "세종": ("세종",),
+    "광주": ("광주광역", "광주시 ", "전남광주"), "대전": ("대전",), "울산": ("울산",), "세종": ("세종",),
     "강원": ("강원",), "충북": ("충북", "충청북도"), "충남": ("충남", "충청남도"), "전북": ("전북", "전라북도"),
-    "전남": ("전남", "전라남도"), "경북": ("경북", "경상북도"), "경남": ("경남", "경상남도"), "제주": ("제주",),
+    "전남": ("전남", "전라남도", "전남광주"), "경북": ("경북", "경상북도"), "경남": ("경남", "경상남도"), "제주": ("제주",),
 }
 OWNERSHIP_KEYWORDS = ("공공분양", "분양", "매매", "사전청약", "주택분양")
 RENTAL_KEYWORDS = ("임대", "전세", "든든전세", "행복주택", "국민임대", "매입임대")
@@ -138,7 +138,7 @@ def _adjacency() -> dict[str, list[str]]:
     if _ADJ is None:
         import json
         from pathlib import Path
-        path = Path(__file__).parent / "data" / "adjacency_capital.json"
+        path = Path(__file__).parent / "data" / "adjacency_kr.json"
         _ADJ = json.loads(path.read_text(encoding="utf-8"))["adjacency"]
     return _ADJ
 
@@ -148,18 +148,29 @@ def _stem(name: str) -> str:
 
 
 def _area_in_text(key: str, text: str) -> bool:
-    """key like '인천 계양구'. Needs its sido in the text, plus the name or its stem ('인천계양').
-    Longer area names containing the stem are blanked first (양주 vs 남양주, 광주 vs 광주광역시)."""
+    """key like '인천 계양구'. The name (or stem, '인천계양') must follow a mention of its own 시도 within a
+    short span, so same-named areas (서울/부산 강서구, 각 시의 중구·동구) don't cross-match.
+    Longer area names containing the stem are blanked first (양주 vs 남양주)."""
     sido, _, name = key.partition(" ")
-    if not _contains_any(text, SIDO_ALIASES.get(sido, (sido,))):
+    aliases = SIDO_ALIASES.get(sido, (sido,))
+    if not _contains_any(text, aliases):
         return False
     stem = _stem(name)
     for other in _adjacency():
         oname = other.split(" ", 1)[1]
         if other != key and stem in _stem(oname) and _stem(oname) != stem:
             text = text.replace(_stem(oname), " ")
-    text = text.replace("광주광역시", " ")
-    return name in text or (len(stem) >= 2 and stem in text)
+    needles = [name] + ([stem] if len(stem) >= 2 else [])
+    if sido == "세종":
+        return True
+    for a in aliases:
+        for m in re.finditer(re.escape(a), text):
+            window = text[m.end(): m.end() + 30]
+            cut = [window.find(x) for al in SIDO_ALIASES.values() for x in al if x not in aliases and x in window]
+            window = a + (window[: min(cut)] if cut else window)  # stop at the next 시도 mention
+            if any(n in window for n in needles):
+                return True
+    return False
 
 
 def adjacent_match(text: str, prefs) -> tuple[str, ...]:
@@ -171,8 +182,10 @@ def adjacent_match(text: str, prefs) -> tuple[str, ...]:
     adj = _adjacency()
     own = [t for t in (list(r.get("sigungu") or ()) + list(r.get("secondary_sigungu") or ())) if t]
     vias: list[str] = []
+    sido_pref = set(r.get("sido") or ())
     for term in own:
-        keys = [k for k in adj if k.split(" ", 1)[1] == term or _stem(k.split(" ", 1)[1]) == _stem(term)]
+        keys = [k for k in adj if (k.split(" ", 1)[1] == term or _stem(k.split(" ", 1)[1]) == _stem(term))
+                and (not sido_pref or k.split(" ", 1)[0] in sido_pref)]  # 강서구 -> 서울 강서구 only
         for k in keys:
             for nb in adj[k]:
                 if _stem(nb.split(" ", 1)[1]) in {_stem(t) for t in own}:

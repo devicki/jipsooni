@@ -39,7 +39,7 @@ DEFAULT_PREFS: dict[str, Any] = {
         "neighborhoods": [],                # 동/생활권 키워드, 예: ["마곡", "목동"]
         "secondary_sigungu": [],            # 2순위 시군구 (+40, 1순위는 +70), 예: ["금천구", "부천"]
         "secondary_neighborhoods": [],      # 2순위 동/생활권, 예: ["개봉", "풍무"]
-        "include_adjacent": True,           # 1·2순위 시군구와 맞닿은 시군구 = 3순위 (+20), data/adjacency_capital.json
+        "include_adjacent": True,           # 1·2순위 시군구와 맞닿은 시군구 = 3순위 (+20), data/adjacency_kr.json
     },
     "housing_types": {
         "include": [],   # 가산점 키워드 예: ["행복주택", "든든전세", "공공분양"]

@@ -74,7 +74,7 @@ export DATA_GO_KR_SERVICE_KEY='발급받은_키'
 | `goals` | `move_in`, `relaxed`, `ownership` 중 받을 섹션 |
 | `filters` 대상계층 | exclude_target_groups(null=가구정보로 자동: senior, special_occupation, student, disabled, single_parent, youth_only), allow_target_groups |
 | `budget` | purchase_max_krw(매매·분양 상한), deposit_max_krw(임대보증금 상한, 이내 +20 / 초과 -80), monthly_rent_max_krw |
-| `regions` | sido(광역, 청약홈 API 필터에도 사용), sigungu(최우선 시군구), neighborhoods(동·생활권 키워드) = 1순위 +70, secondary_sigungu / secondary_neighborhoods = 2순위 +40. '…구' 이름은 sido도 맞아야 인정. include_adjacent(기본 true) = 1·2순위와 맞닿은 시군구 3순위 +20, 예 '부천 인접' (인접표: `jipsooni/data/adjacency_capital.json`, 수도권 수작업 정리). 인접 지역은 drop_outside_regions에서 제외되지 않음. 내집마련 섹션도 같은 지역 규칙 적용 |
+| `regions` | sido(광역, 청약홈 API 필터에도 사용), sigungu(최우선 시군구), neighborhoods(동·생활권 키워드) = 1순위 +70, secondary_sigungu / secondary_neighborhoods = 2순위 +40. '…구' 이름은 sido도 맞아야 인정. include_adjacent(기본 true) = 1·2순위와 맞닿은 시군구 3순위 +20, 예 '부천 인접' (전국 시군구 인접표 `jipsooni/data/adjacency_kr.json`: 통계청 SGIS 행정동 경계(vuski/admdongkor ver20260701, 공공누리 1유형/CC BY 4.0)에서 `tools/build_adjacency.py`로 생성, 연륙교 수동 보완. 출처: 통계청 SGIS, github.com/vuski/admdongkor). 인접 지역은 drop_outside_regions에서 제외되지 않음. 내집마련 섹션도 같은 지역 규칙 적용 |
 | `housing_types` | include(가산점 키워드), exclude(제외 키워드) |
 | `filters` | exclude_child_required(비우면 자녀 유무로 자동), exclude_small_units(원룸·기숙사 제외), drop_outside_regions |
 | `digest` | per_section_limit, relaxed_min_score, ownership_min_score |
