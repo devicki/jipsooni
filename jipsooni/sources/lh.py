@@ -26,40 +26,73 @@ class LhNoticeSource(NoticeSource):
         today = date.today()
         start = today - timedelta(days=self.settings.lh_lookback_days)
         end = today + timedelta(days=self.settings.lh_lookahead_days)
+        # port: the original asked only UPP_AIS_TP_CD=06 (임대). 든든전세/매입임대 live under 13 (주거복지),
+        # 공공분양 under 05, 신혼희망타운 under 39 -> query each, then keep still-open rows only.
+        rows: list[dict[str, Any]] = []
+        for code in self.settings.lh_upper_type_codes or ("06",):
+            rows.extend(self._fetch_code(code, start, end))
+
+        keep_from = today - timedelta(days=self.settings.lh_closed_grace_days)
+        unique: dict[str, Notice] = {}
+        for row in rows:
+            notice = self._normalize(row)
+            if notice.application_end_date and notice.application_end_date < keep_from:
+                continue  # selection is by open deadline, not by posting date
+            unique.setdefault(notice.canonical_key, notice)
+        notices = list(unique.values())
+        if self.settings.fetch_details:
+            notices = self._enrich(notices, today)
+        return notices
+
+    def _fetch_code(self, code: str, start: date, end: date) -> list[dict[str, Any]]:
         base_params = {
             "ServiceKey": self.settings.data_go_kr_service_key,
             "PG_SZ": "100",
             "PAN_NT_ST_DT": start.strftime("%Y.%m.%d"),
             "CLSG_DT": end.strftime("%Y.%m.%d"),
-            "UPP_AIS_TP_CD": "06",
+            "UPP_AIS_TP_CD": code,
         }
-
         rows: list[dict[str, Any]] = []
         total_count: int | None = None
         page_size = int(base_params["PG_SZ"])
         page = 1
-
         while True:
-            payload = self._request_page(base_params | {"PAGE": str(page)})
-            items = extract_items(payload)
+            items = extract_items(self._request_page(base_params | {"PAGE": str(page)}))
             if not items:
                 break
-
             rows.extend(items)
             if total_count is None:
                 total_count = self._total_count(items)
-
             if total_count is not None and page >= ceil(total_count / page_size):
                 break
             if total_count is None and len(items) < page_size:
                 break
             page += 1
+        return rows
 
-        unique: dict[str, Notice] = {}
-        for row in rows:
-            notice = self._normalize(row)
-            unique.setdefault(notice.canonical_key, notice)
-        return list(unique.values())
+    def _enrich(self, notices: list[Notice], today: date) -> list[Notice]:
+        """LH list rows only say '서울특별시'. The detail page lists 모집지역 (e.g. 강서구) and sometimes
+        접수기간; read it for still-open notices, cached."""
+        from concurrent.futures import ThreadPoolExecutor
+        from jipsooni.detail_cache import DetailCache
+
+        cache = DetailCache(self.settings.detail_cache_path or None)
+
+        def one(n: Notice) -> Notice:
+            if not n.original_url or (n.application_end_date and n.application_end_date < today):
+                return n
+            info = cache.get(f"lh:{n.external_id}", lambda: parse_lh_detail(self._get_text(n.original_url)))
+            return apply_detail(n, info)
+
+        with ThreadPoolExecutor(max_workers=6) as pool:
+            out = list(pool.map(one, notices))
+        cache.save()
+        return out
+
+    def _get_text(self, url: str) -> str:
+        r = self.client.get(url)
+        r.raise_for_status()
+        return r.text
 
     def _request_page(self, params: dict[str, str]) -> Any:
         response = self.client.get(self.settings.lh_notice_endpoint, params=params)
@@ -137,3 +170,31 @@ def _detail_text(row: dict[str, Any]) -> str | None:
         parts.append(f"면적/형 {area}")
 
     return " / ".join(parts) if parts else None
+
+
+def parse_lh_detail(html: str) -> dict[str, Any]:
+    from jipsooni.utils import page_text, parse_period
+    import re
+    text = page_text(html)
+    m = re.search(r"모집지역\s*:\s*([^\n]{1,300}?)\s*(?:모집세대|공급정보|\n)", text)
+    areas = []
+    if m:
+        areas = [a.strip() for a in re.split(r"[,，/]", m.group(1)) if a.strip()][:40]
+    s, e = parse_period(text)
+    return {"areas": areas, "start": s.isoformat() if s else None, "end": e.isoformat() if e else None}
+
+
+def apply_detail(n: Notice, info: dict[str, Any]) -> Notice:
+    import dataclasses
+    changes: dict[str, Any] = {}
+    areas = info.get("areas") or []
+    if areas:
+        base = n.region or ""
+        changes["region"] = (base + " " + ", ".join(areas)).strip()
+    start = date.fromisoformat(info["start"]) if info.get("start") else None
+    end = n.application_end_date or (date.fromisoformat(info["end"]) if info.get("end") else None)
+    if start and not n.application_start_date and end and timedelta(0) <= end - start <= timedelta(days=60):
+        changes["application_start_date"] = start
+    if info.get("end") and not n.application_end_date:
+        changes["application_end_date"] = date.fromisoformat(info["end"])
+    return dataclasses.replace(n, **changes) if changes else n

@@ -52,14 +52,22 @@ class MyHomeNoticeSource(NoticeSource):
             page += 1
 
         unique: dict[str, Notice] = {}
+        regions: dict[str, set[str]] = {}
         for row in rows:
             notice = self._normalize_api(row)
+            regions.setdefault(notice.canonical_key, set()).add(notice.region or "")
             current = unique.get(notice.canonical_key)
-            # 같은 pblancId-houseSn에 시군구 행이 여러 개 온다. API 순서로 고르면 매 실행 가짜 정정 알림이 뜬다.
-            # ponytail: 한 행만 남김, 지역별 호수를 다 보여주려면 행 병합 필요
+            # 같은 pblancId-houseSn에 시군구 행이 여러 개 온다. API 순서와 무관하게 같은 행을 고른다.
             if current is None or notice.content_hash < current.content_hash:
                 unique[notice.canonical_key] = notice
-        return list(unique.values())
+        # port fix: keep every 시군구 of a multi-district notice (e.g. 든든전세 서울 11개 구), not just one,
+        # otherwise 강서구 is lost when the picked row is 동대문구.
+        import dataclasses
+        out = []
+        for key, notice in unique.items():
+            merged = _merge_regions(regions[key])
+            out.append(dataclasses.replace(notice, region=merged) if merged != notice.region else notice)
+        return out
 
     def _request_api_page(self, params: dict[str, str]) -> Any:
         response = self.client.get(self.settings.myhome_notice_endpoint, params=params)
@@ -246,3 +254,15 @@ def _myhome_status(kind: str | None, start, end) -> str | None:
     if kind and "정정" in kind:
         return f"정정공고 {state}" if state else "정정공고"
     return state or kind
+
+
+def _merge_regions(regions: set[str]) -> str | None:
+    """{'서울특별시 강서구', '서울특별시 동대문구'} -> '서울특별시 강서구, 동대문구' (sorted, stable)."""
+    by_sido: dict[str, list[str]] = {}
+    for r in sorted(x for x in regions if x):
+        sido, _, rest = r.partition(" ")
+        lst = by_sido.setdefault(sido, [])
+        if rest and rest not in lst:
+            lst.append(rest)
+    parts = [(f"{sido} {', '.join(rest)}" if rest else sido) for sido, rest in by_sido.items()]
+    return " / ".join(parts) or None

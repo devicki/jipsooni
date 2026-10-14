@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from jipsooni.models import Notice
-from jipsooni.notify import classify_alert_reason, format_notice_message
+from jipsooni.notify import alert_reasons, format_notice_message
 
 SCHEMA = """
 create table if not exists notices (
@@ -90,20 +90,27 @@ def _replace_files(conn, n: Notice) -> None:
 
 
 def create_alert_if_needed(conn, n: Notice, *, is_new: bool, changed: bool) -> str | None:
+    """Returns the first newly created alert message (or None). Creates one alert per applicable reason."""
     # port: LH/마이홈 APIs return already-closed notices; store them but never alert.
     if n.application_end_date and n.application_end_date < date.today():
         return None
-    reason = classify_alert_reason(n, is_new=is_new, changed=changed)
-    if reason is None:
-        return None
     nid = conn.execute("select id from notices where canonical_key=?", (n.canonical_key,)).fetchone()["id"]
-    message = format_notice_message(n, reason)
-    event_key = f"{n.canonical_key}:{reason}:{n.content_hash[:12]}"
-    conn.execute("insert or ignore into notice_events (notice_id,event_type,event_key,created_at) values (?,?,?,?)",
-                 (nid, reason, event_key, now()))
-    cur = conn.execute("insert or ignore into alerts (notice_id,reason,event_key,message,created_at) values (?,?,?,?,?)",
-                       (nid, reason, event_key, message, now()))
-    return message if cur.rowcount else None
+    first = None
+    for reason in alert_reasons(n, is_new=is_new, changed=changed):
+        message = format_notice_message(n, reason)
+        if reason in ("접수 시작 임박", "마감 임박"):
+            # date events key on the date itself, so a re-listing with new dates fires again
+            d = n.application_start_date if reason == "접수 시작 임박" else n.application_end_date
+            event_key = f"{n.canonical_key}:{reason}:{d}"
+        else:
+            event_key = f"{n.canonical_key}:{reason}:{n.content_hash[:12]}"
+        conn.execute("insert or ignore into notice_events (notice_id,event_type,event_key,created_at) values (?,?,?,?)",
+                     (nid, reason, event_key, now()))
+        cur = conn.execute("insert or ignore into alerts (notice_id,reason,event_key,message,created_at) values (?,?,?,?,?)",
+                           (nid, reason, event_key, message, now()))
+        if cur.rowcount and first is None:
+            first = message
+    return first
 
 
 PENDING_ALERT_QUERY = """

@@ -21,6 +21,21 @@ def should_alert_start(notice: Notice, today: date | None = None) -> bool:
     )
 
 
+def alert_reasons(notice: Notice, is_new: bool, changed: bool, today: date | None = None) -> list[str]:
+    """All alert reasons that apply now. The primary (classify_alert_reason) can shadow the
+    date-based ones: e.g. a '정정공고' or an old notice re-listed with new dates would otherwise
+    never get '접수 시작 임박'. Each reason has its own event key, so each fires once."""
+    out: list[str] = []
+    primary = classify_alert_reason(notice, is_new=is_new, changed=changed)
+    if primary:
+        out.append(primary)
+    if should_alert_start(notice, today) and "접수 시작 임박" not in out:
+        out.append("접수 시작 임박")
+    if should_alert_deadline(notice, today) and "마감 임박" not in out:
+        out.append("마감 임박")
+    return out
+
+
 def classify_alert_reason(notice: Notice, is_new: bool, changed: bool) -> str | None:
     status = notice.status or ""
     if is_new:

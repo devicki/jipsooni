@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from jipsooni.config import Settings, kr_client
 from jipsooni.models import Notice
-from jipsooni.sources.base import NoticeSource
+from jipsooni.sources.base import NoticeSource, enrich_dates_from_detail
 from jipsooni.utils import clean_text, parse_date, status_from_dates
 
 
@@ -29,7 +29,12 @@ class ShNoticeSource(NoticeSource):
         unique: dict[str, Notice] = {}
         for notice in notices:
             unique.setdefault(notice.canonical_key, notice)
-        return list(unique.values())
+        return enrich_dates_from_detail(list(unique.values()), self.settings, self._get_html, "sh")
+
+    def _get_html(self, url: str) -> str:
+        r = self.client.get(url)
+        r.raise_for_status()
+        return r.text
 
     def _fetch_page(self, page: int) -> str:
         response = self.client.get(_with_page(self.settings.sh_notice_url, page))

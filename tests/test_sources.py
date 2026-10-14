@@ -23,6 +23,7 @@ def _settings(applyhome_extra_house_manage_nos: tuple[str, ...] = ()) -> Setting
         hug_notice_url="https://example.test/hug",
         log_level="INFO",
         applyhome_extra_house_manage_nos=applyhome_extra_house_manage_nos,
+        lh_upper_type_codes=("06",),
     )
 
 
@@ -72,7 +73,7 @@ class _FakeClient:
                 "ALL_CNT": "101",
                 "PAN_ID": f"id-{i}",
                 "PAN_NM": f"공고 {i}",
-                "CLSG_DT": "2026.07.10",
+                "CLSG_DT": "2099.07.10",
             }
             for i in range(start, min(start + 100, 101))
         ]

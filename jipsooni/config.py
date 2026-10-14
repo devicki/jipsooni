@@ -28,6 +28,10 @@ class Settings:
     hug_notice_url: str
     log_level: str
     applyhome_extra_house_manage_nos: tuple[str, ...] = ()
+    lh_upper_type_codes: tuple[str, ...] = ("05", "06", "13", "39")  # 분양, 임대, 주거복지, 신혼희망
+    lh_closed_grace_days: int = 3      # keep LH rows whose CLSG_DT is at most this many days past
+    detail_cache_path: str = ""        # "" = no cache (tests); from_env -> ~/.jipsooni/detail_cache.json
+    fetch_details: bool = False        # read SH/HUG/LH detail pages for dates & 모집지역
     kr_proxy: str = ""  # HTTP proxy URL for Korean-IP-only sources; empty = direct
     http_timeout: float = 20.0
 
@@ -39,7 +43,7 @@ class Settings:
             prefs_path=os.getenv("JIPSOONI_PREFS", str(HOME / "prefs.json")),
             data_go_kr_service_key=key,
             lh_notice_endpoint=os.getenv("LH_NOTICE_ENDPOINT", "https://apis.data.go.kr/B552555/lhLeaseNoticeInfo1/lhLeaseNoticeInfo1"),
-            lh_lookback_days=_int_env("LH_LOOKBACK_DAYS", 45),
+            lh_lookback_days=_int_env("LH_LOOKBACK_DAYS", 365),
             lh_lookahead_days=_int_env("LH_LOOKAHEAD_DAYS", 120),
             myhome_notice_endpoint=os.getenv("MYHOME_NOTICE_ENDPOINT", "https://apis.data.go.kr/1613000/HWSPR02/rsdtRcritNtcList"),
             myhome_notice_page_url=os.getenv("MYHOME_NOTICE_PAGE_URL", "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcView.do"),
@@ -49,6 +53,10 @@ class Settings:
             hug_notice_url=os.getenv("HUG_NOTICE_URL", "https://www.khug.or.kr/jeonse/web/s07/s070301.jsp"),
             log_level=os.getenv("LOG_LEVEL", "WARNING"),
             kr_proxy=os.getenv("JIPSOONI_KR_PROXY", ""),
+            lh_upper_type_codes=tuple(c.strip() for c in os.getenv("LH_UPP_AIS_TP_CDS", "05,06,13,39").split(",") if c.strip()),
+            lh_closed_grace_days=_int_env("LH_CLOSED_GRACE_DAYS", 3),
+            detail_cache_path=os.getenv("JIPSOONI_DETAIL_CACHE", str(HOME / "detail_cache.json")),
+            fetch_details=os.getenv("JIPSOONI_FETCH_DETAILS", "1") != "0",
             http_timeout=float(os.getenv("JIPSOONI_HTTP_TIMEOUT", "20")),
             applyhome_extra_house_manage_nos=tuple(
                 v.strip() for v in os.getenv("APPLYHOME_EXTRA_HOUSE_MANAGE_NOS", "").split(",") if v.strip()

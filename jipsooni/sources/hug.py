@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from jipsooni.config import Settings, kr_client
 from jipsooni.models import Notice, NoticeFile
-from jipsooni.sources.base import NoticeSource
+from jipsooni.sources.base import NoticeSource, enrich_dates_from_detail
 from jipsooni.utils import clean_text, parse_date
 
 
@@ -25,7 +25,14 @@ class HugNoticeSource(NoticeSource):
                 f"HUG page request failed status={response.status_code} body={response.text[:200]}"
             )
         response.encoding = "euc-kr"
-        return self._parse(response.text, self.settings.hug_notice_url)
+        notices = self._parse(response.text, self.settings.hug_notice_url)
+        return enrich_dates_from_detail(notices, self.settings, self._get_html, "hug")
+
+    def _get_html(self, url: str) -> str:
+        r = self.client.get(url)
+        r.raise_for_status()
+        r.encoding = "euc-kr"
+        return r.text
 
     def _parse(self, html: str, base_url: str) -> list[Notice]:
         soup = BeautifulSoup(html, "html.parser")

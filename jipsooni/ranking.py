@@ -8,7 +8,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from jipsooni.prefs import DEFAULT_PREFS, exclude_child_required
+from jipsooni.prefs import DEFAULT_PREFS, TARGET_GROUP_KEYWORDS, exclude_child_required, target_groups_to_exclude
 
 SIDO_ALIASES = {
     "서울": ("서울",), "경기": ("경기",), "인천": ("인천",), "부산": ("부산",), "대구": ("대구",),
@@ -120,6 +120,16 @@ def _tier(text: str, prefs) -> int:
     return 0
 
 
+def _matched_area(text: str, prefs, tier: int) -> str | None:
+    r = prefs["regions"]
+    keys = ("sigungu", "neighborhoods") if tier == 1 else ("secondary_sigungu", "secondary_neighborhoods")
+    for k in keys:
+        for t in r.get(k) or ():
+            if t and t in text:
+                return t
+    return None
+
+
 def _has_tiers(prefs) -> bool:
     r = prefs["regions"]
     return any(r.get(k) for k in ("sigungu", "neighborhoods", "secondary_sigungu", "secondary_neighborhoods"))
@@ -172,10 +182,11 @@ def rank_alert(row: dict[str, Any], prefs: dict | None = None, today: date | Non
 
     # regions: tier1 sigungu/neighborhood (+70), tier2 secondary (+40), else sido (+35 first listed, +15 others)
     tier = _tier(text, prefs)
+    hitname = _matched_area(text, prefs, tier)
     if tier == 1:
-        score += 70; reasons.append("최우선 지역")
+        score += 70; reasons.append("최우선 지역"); reasons.append(f"{hitname} 포함")
     elif tier == 2:
-        score += 40; reasons.append("2순위 지역")
+        score += 40; reasons.append("2순위 지역"); reasons.append(f"{hitname} 포함")
     else:
         matched = [s for s in (prefs["regions"].get("sido") or []) if _contains_any(text, SIDO_ALIASES.get(s, (s,)))]
         if matched:
@@ -250,8 +261,21 @@ def is_excluded_for_user_profile(row: dict[str, Any], prefs: dict | None = None)
     text = _combined_text(row)
     if exclude_child_required(prefs) and _contains_any(text, CHILD_OR_NEWBORN_PRIORITY_KEYWORDS):
         return True
+    if excluded_target_group(row, prefs):
+        return True
     ex = tuple(prefs["housing_types"].get("exclude") or ())
     return bool(ex) and _contains_any(text, ex)
+
+
+def excluded_target_group(row: dict[str, Any], prefs: dict | None = None) -> str | None:
+    """Name of the eligible group that rules this notice out for the household, else None.
+    Looks at title + target_group only (not the long message) to avoid false hits."""
+    prefs = prefs or DEFAULT_PREFS
+    text = " ".join(str(row.get(k) or "") for k in ("title", "target_group", "housing_type"))
+    for group in sorted(target_groups_to_exclude(prefs)):
+        if _contains_any(text, TARGET_GROUP_KEYWORDS.get(group, ())):
+            return group
+    return None
 
 
 def is_small_unit(row: dict[str, Any]) -> bool:

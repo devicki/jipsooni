@@ -72,6 +72,7 @@ export DATA_GO_KR_SERVICE_KEY='발급받은_키'
 | `finance` | monthly_income_krw, total_assets_krw, car_value_krw (자격 확인 참고용) |
 | `subscription_account` | 청약통장 has, years, deposit_count, balance_krw |
 | `goals` | `move_in`, `relaxed`, `ownership` 중 받을 섹션 |
+| `filters` 대상계층 | exclude_target_groups(null=가구정보로 자동: senior, special_occupation, student, disabled, single_parent, youth_only), allow_target_groups |
 | `budget` | purchase_max_krw(매매·분양 상한), deposit_max_krw(임대보증금 상한, 이내 +20 / 초과 -80), monthly_rent_max_krw |
 | `regions` | sido(광역, 청약홈 API 필터에도 사용), sigungu(최우선 시군구), neighborhoods(동·생활권 키워드) = 1순위 +70, secondary_sigungu / secondary_neighborhoods = 2순위 +40. '…구' 이름은 sido도 맞아야 인정 |
 | `housing_types` | include(가산점 키워드), exclude(제외 키워드) |
