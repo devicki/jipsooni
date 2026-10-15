@@ -1,5 +1,7 @@
 # jipsooni (집순이) — 한국 공공주택 공고 수집기
 
+> Engine for the 집순이 (Jipsooni) Grok Bot template.
+
 LH·마이홈·SH·HUG·청약홈의 공공주택/청약 공고를 한 번에 모아 **내 조건(prefs.json)에 맞는 것만** 골라주는 Python 수집기입니다.
 신청은 대신하지 않고, 원문 링크와 일정까지만 안내합니다. Grok Bot 같은 에이전트가 루틴으로 `collect` → `digest`를 돌리고,
 결과 JSON을 채팅 문장으로 다시 써서 보내는 용도로 만들었습니다.
