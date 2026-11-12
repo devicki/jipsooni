@@ -35,7 +35,15 @@ def _client(routes):
     return httpx.Client(transport=httpx.MockTransport(handler))
 
 
-def test_lh_live_list_of_dsSch_dsList():
+def test_lh_live_list_of_dsSch_dsList(monkeypatch):
+    # Fixture rows close in October 2026. Freeze the collector clock on the capture day
+    # so the open-deadline filter does not drop them after that month.
+    class _FrozenDate(date):
+        @classmethod
+        def today(cls):
+            return date(2026, 10, 14)
+
+    monkeypatch.setattr("jipsooni.sources.lh.date", _FrozenDate)
     src = LhNoticeSource(_settings(), client=_client({"https://t/lh": (FX / "lh_live.json").read_bytes()}))
     notices = src.fetch()
     assert len(notices) == 3

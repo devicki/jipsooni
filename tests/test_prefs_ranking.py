@@ -55,12 +55,12 @@ def test_goals_filter_sections():
 
 def test_sqlite_dedupe_and_change():
     conn = connect(":memory:")
-    n = Notice(source="청약홈", external_id="1", title="A 무순위", application_end_date=date(2026, 10, 30))
+    n = Notice(source="청약홈", external_id="1", title="A 무순위", application_end_date=date(2099, 10, 30))
     assert upsert_notice(conn, n) == (True, False)
     assert create_alert_if_needed(conn, n, is_new=True, changed=False)
     assert upsert_notice(conn, n) == (False, False)
     assert create_alert_if_needed(conn, n, is_new=True, changed=False) is None  # same event_key
-    n2 = Notice(source="청약홈", external_id="1", title="A 무순위", application_end_date=date(2026, 10, 31))
+    n2 = Notice(source="청약홈", external_id="1", title="A 무순위", application_end_date=date(2099, 10, 31))
     assert upsert_notice(conn, n2) == (False, True)
     assert create_alert_if_needed(conn, n2, is_new=False, changed=True)
     assert len(pending_rows(conn)) == 2
