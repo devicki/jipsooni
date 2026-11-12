@@ -20,8 +20,10 @@ LH·마이홈·SH·HUG·청약홈의 공공주택/청약 공고를 한 번에 �
 | 마이홈 모집공고 | 공공데이터 API | `apis.data.go.kr/1613000/HWSPR02/rsdtRcritNtcList` | 예 |
 | SH 공공임대 | 웹 목록 | `housing.seoul.go.kr/site/main/sh/publicLease/list` | 예 |
 | HUG 든든전세 | 웹 공지(EUC-KR) | `www.khug.or.kr/jeonse/web/s07/s070301.jsp` | 예 |
-| 청약홈 잔여세대·무순위 | odcloud API | `api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getRemndrLttotPblancDetail` | **아니오** |
-| 청약홈 웹 목록(보조) | 웹 | `www.applyhome.co.kr/ai/aia/selectAPTRemndrLttotPblancListView.do` | 예 |
+| 청약홈 잔여세대·무순위·불법행위 재공급 | odcloud API | `api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getRemndrLttotPblancDetail` (주택구분 04·06) | **아니오** |
+| 청약홈 APT 일반분양 | odcloud API | `api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail` (주택구분 01, 분양주택) | **아니오** |
+| 청약홈 임의공급 | odcloud API | `api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getOPTLttotPblancDetail` | **아니오** |
+| 청약홈 웹 목록(보조) | 웹 | `www.applyhome.co.kr/ai/aia/selectAPTRemndrLttotPblancListView.do` (04·06·11) | 예 |
 
 ## 설치
 
@@ -149,7 +151,7 @@ export JIPSOONI_KR_PROXY_UPSTREAM='socks5://127.0.0.1:1055__http://<your-tailsca
 
 ## 프록시 없이 쓸 때 (축소 모드)
 
-- 청약홈(무순위·잔여세대·불법행위 재공급)만 수집되고 digest도 정상 동작합니다.
+- 청약홈(무순위·잔여세대·불법행위 재공급·APT 일반분양·임의공급)만 수집되고 digest도 정상 동작합니다. 일반분양·임의공급은 모집공고일 최근 365일을 조회한 뒤, 접수 종료일이 지난 행은 버립니다. 같은 서비스 키로 호출하며 활용신청을 따로 할 필요는 없습니다.
 - LH·마이홈·SH·HUG는 `status: "failed"`와 함께 `hint`에 "한국 IP 필요"가 표시되고, 나머지 소스는 그대로 저장됩니다(종료 코드 0).
 - 국내 PC에서 직접 실행하면 프록시 없이 전부 동작합니다.
 - 실패한 소스를 매번 기다리지 않으려면 prefs `sources`를 `["applyhome"]`로 두세요.

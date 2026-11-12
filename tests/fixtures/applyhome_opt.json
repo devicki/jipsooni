@@ -1,0 +1,61 @@
+{
+  "page": 1,
+  "perPage": 100,
+  "totalCount": 4,
+  "data": [
+    {
+      "HOUSE_MANAGE_NO": "2026940247",
+      "PBLANC_NO": "2026940247",
+      "HOUSE_NM": "수원이목지구 대방 디에트르 더 리체Ⅰ(A4BL)",
+      "HOUSE_SECD": "11",
+      "HOUSE_SECD_NM": "임의공급",
+      "HSSPLY_ADRES": "경기도 수원시 장안구 이목동 종전부동산 이목지구 도시개발사업 A4블록 공동주택용지",
+      "TOT_SUPLY_HSHLDCO": 2,
+      "RCRIT_PBLANC_DE": "20261110",
+      "SUBSCRPT_RCEPT_BGNDE": "20261112",
+      "SUBSCRPT_RCEPT_ENDDE": "20261113",
+      "PRZWNER_PRESNATN_DE": "20261118",
+      "CNTRCT_CNCLS_BGNDE": "20261121",
+      "CNTRCT_CNCLS_ENDDE": "20261121",
+      "MVN_PREARNGE_YM": "202709",
+      "MDHS_TELNO": "1688-4007",
+      "BSNS_MBY_NM": "디비이엔씨주식회사"
+    },
+    {
+      "HOUSE_MANAGE_NO": "2026940252",
+      "PBLANC_NO": "2026940252",
+      "HOUSE_NM": "신월동 한양립스(3차)",
+      "HOUSE_SECD": "11",
+      "HOUSE_SECD_NM": "임의공급",
+      "HSSPLY_ADRES": "서울특별시 양천구 신월동 118-14외 2필지 일대",
+      "TOT_SUPLY_HSHLDCO": 5,
+      "RCRIT_PBLANC_DE": "2026-11-09",
+      "SUBSCRPT_RCEPT_BGNDE": "2026-11-11",
+      "SUBSCRPT_RCEPT_ENDDE": "2026-11-12",
+      "PRZWNER_PRESNATN_DE": "2026-11-17",
+      "MDHS_TELNO": "02-2696-0990"
+    },
+    {
+      "HOUSE_MANAGE_NO": "2026940001",
+      "PBLANC_NO": "2026940001",
+      "HOUSE_NM": "이미 마감된 임의공급",
+      "HOUSE_SECD": "11",
+      "HOUSE_SECD_NM": "임의공급",
+      "HSSPLY_ADRES": "경기도 성남시",
+      "RCRIT_PBLANC_DE": "20261101",
+      "SUBSCRPT_RCEPT_BGNDE": "20261101",
+      "SUBSCRPT_RCEPT_ENDDE": "20261101"
+    },
+    {
+      "HOUSE_MANAGE_NO": "2026940099",
+      "PBLANC_NO": "2026940099",
+      "HOUSE_NM": "해운대 임의공급",
+      "HOUSE_SECD": "11",
+      "HOUSE_SECD_NM": "임의공급",
+      "HSSPLY_ADRES": "부산광역시 해운대구",
+      "RCRIT_PBLANC_DE": "20261110",
+      "SUBSCRPT_RCEPT_BGNDE": "20261112",
+      "SUBSCRPT_RCEPT_ENDDE": "20261120"
+    }
+  ]
+}

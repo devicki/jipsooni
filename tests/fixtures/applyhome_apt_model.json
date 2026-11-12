@@ -1,0 +1,21 @@
+{
+  "page": 1,
+  "perPage": 100,
+  "totalCount": 2,
+  "data": [
+    {
+      "HOUSE_MANAGE_NO": "2026000535",
+      "PBLANC_NO": "2026000535",
+      "MODEL_NO": "01",
+      "HOUSE_TY": "059.9670A",
+      "LTTOT_TOP_AMOUNT": "62500"
+    },
+    {
+      "HOUSE_MANAGE_NO": "2026000535",
+      "PBLANC_NO": "2026000535",
+      "MODEL_NO": "06",
+      "HOUSE_TY": "084.9932",
+      "LTTOT_TOP_AMOUNT": "85,210"
+    }
+  ]
+}

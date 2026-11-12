@@ -34,6 +34,11 @@ class Settings:
     fetch_details: bool = False        # read SH/HUG/LH detail pages for dates & 모집지역
     kr_proxy: str = ""  # HTTP proxy URL for Korean-IP-only sources; empty = direct
     http_timeout: float = 20.0
+    # Same ApplyhomeInfoDetailSvc service. Optional overrides; defaults are the official operations.
+    applyhome_apt_endpoint: str = "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail"
+    applyhome_opt_endpoint: str = "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getOPTLttotPblancDetail"
+    applyhome_apt_model_endpoint: str = "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancMdl"
+    applyhome_opt_model_endpoint: str = "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getOPTLttotPblancMdl"
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -49,6 +54,10 @@ class Settings:
             myhome_notice_page_url=os.getenv("MYHOME_NOTICE_PAGE_URL", "https://www.myhome.go.kr/hws/portal/sch/selectRsdtRcritNtcView.do"),
             applyhome_service_key=os.getenv("APPLYHOME_SERVICE_KEY", key),
             applyhome_remndr_endpoint=os.getenv("APPLYHOME_REMNDR_ENDPOINT", "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getRemndrLttotPblancDetail"),
+            applyhome_apt_endpoint=os.getenv("APPLYHOME_APT_ENDPOINT", "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail"),
+            applyhome_opt_endpoint=os.getenv("APPLYHOME_OPT_ENDPOINT", "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getOPTLttotPblancDetail"),
+            applyhome_apt_model_endpoint=os.getenv("APPLYHOME_APT_MODEL_ENDPOINT", "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancMdl"),
+            applyhome_opt_model_endpoint=os.getenv("APPLYHOME_OPT_MODEL_ENDPOINT", "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getOPTLttotPblancMdl"),
             sh_notice_url=os.getenv("SH_NOTICE_URL", "https://housing.seoul.go.kr/site/main/sh/publicLease/list"),
             hug_notice_url=os.getenv("HUG_NOTICE_URL", "https://www.khug.or.kr/jeonse/web/s07/s070301.jsp"),
             log_level=os.getenv("LOG_LEVEL", "WARNING"),

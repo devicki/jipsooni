@@ -1,0 +1,15 @@
+{
+  "page": 1,
+  "perPage": 100,
+  "totalCount": 1,
+  "data": [
+    {
+      "HOUSE_MANAGE_NO": "2026940247",
+      "PBLANC_NO": "2026940247",
+      "MODEL_NO": "01",
+      "HOUSE_TY": "084.9796C",
+      "SUPLY_HSHLDCO": 2,
+      "LTTOT_TOP_AMOUNT": "102866"
+    }
+  ]
+}
